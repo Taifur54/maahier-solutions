@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Maahier Solutions</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;1,300&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #080c10;
+  --surface: #0d1219;
+  --border: rgba(255,255,255,0.07);
+  --border-strong: rgba(255,255,255,0.14);
+  --text: #e8edf2;
+  --muted: rgba(232,237,242,0.4);
+  --faint: rgba(232,237,242,0.15);
+  --accent: #4af4c8;
+  --accent2: #a0b4ff;
+  --white: #ffffff;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-weight:300;overflow-x:hidden;cursor:none;}
+
+#cur{position:fixed;width:6px;height:6px;background:var(--accent);border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);}
+#cur-trail{position:fixed;width:28px;height:28px;border:1px solid rgba(74,244,200,0.35);border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:width .25s,height .25s,border-color .25s;}
+body.expand #cur-trail{width:50px;height:50px;border-color:rgba(74,244,200,0.18);}
+
+body::after{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");opacity:.022;pointer-events:none;z-index:900;}
+
+nav{position:fixed;top:0;left:0;right:0;z-index:500;display:flex;justify-content:space-between;align-items:center;padding:28px 64px;transition:border-color .4s,background .4s;border-bottom:1px solid transparent;}
+nav.scrolled{border-color:var(--border);background:rgba(8,12,16,.92);backdrop-filter:blur(16px);}
+.nav-logo{font-family:'Syne',sans-serif;font-size:15px;font-weight:800;letter-spacing:.15em;text-transform:uppercase;color:var(--white);}
+.nav-logo sup{font-size:9px;font-weight:400;color:var(--accent);vertical-align:super;letter-spacing:0;margin-left:2px;}
+.nav-links{display:flex;gap:48px;list-style:none;}
+.nav-links a{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.1em;color:var(--muted);text-decoration:none;transition:color .25s;}
+.nav-links a:hover{color:var(--text);}
+.nav-cta{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.12em;padding:10px 24px;border:1px solid var(--border-strong);color:var(--text);text-decoration:none;transition:border-color .25s,color .25s;cursor:none;}
+.nav-cta:hover{border-color:var(--accent);color:var(--accent);}
+
+#hero{min-height:100vh;display:grid;grid-template-columns:1fr 1fr;align-items:center;padding:160px 64px 100px;position:relative;overflow:hidden;}
+.hero-left{max-width:540px;}
+.hero-eyebrow{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.2em;color:var(--accent);text-transform:uppercase;display:flex;align-items:center;gap:14px;margin-bottom:40px;opacity:0;animation:up .7s .1s ease forwards;}
+.hero-eyebrow::before{content:'';display:block;width:32px;height:1px;background:var(--accent);}
+.hero-title{font-family:'Syne',sans-serif;font-size:clamp(48px,5.5vw,84px);font-weight:800;line-height:1.02;color:var(--white);letter-spacing:-.02em;opacity:0;animation:up .7s .25s ease forwards;}
+.hero-title em{font-style:normal;-webkit-text-stroke:1px rgba(255,255,255,0.35);color:transparent;}
+.hero-body{margin-top:32px;font-size:17px;line-height:1.75;color:var(--muted);max-width:400px;opacity:0;animation:up .7s .4s ease forwards;}
+.hero-actions{margin-top:48px;display:flex;gap:16px;align-items:center;opacity:0;animation:up .7s .55s ease forwards;}
+.btn{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.12em;text-decoration:none;cursor:none;display:inline-flex;align-items:center;gap:10px;}
+.btn-fill{padding:14px 32px;background:var(--accent);color:var(--bg);font-weight:400;transition:opacity .2s;}
+.btn-fill:hover{opacity:.85;}
+.btn-ghost{padding:14px 32px;border:1px solid var(--border-strong);color:var(--muted);transition:color .25s,border-color .25s;}
+.btn-ghost:hover{color:var(--text);}
+
+.hero-right{display:flex;align-items:center;justify-content:center;opacity:0;animation:fade .9s .6s ease forwards;}
+.geo-wrap{position:relative;width:420px;height:420px;}
+.geo-wrap svg{width:100%;height:100%;}
+
+.hero-stats{position:absolute;bottom:0;left:0;right:0;border-top:1px solid var(--border);display:grid;grid-template-columns:repeat(4,1fr);opacity:0;animation:up .6s .8s ease forwards;}
+.hero-stat{padding:28px 64px;border-right:1px solid var(--border);}
+.hero-stat:last-child{border-right:none;}
+.stat-val{font-family:'Syne',sans-serif;font-size:36px;font-weight:800;color:var(--white);line-height:1;}
+.stat-val span{color:var(--accent);}
+.stat-lbl{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.12em;color:var(--faint);margin-top:6px;text-transform:uppercase;}
+
+section{position:relative;z-index:10;}
+.container{max-width:1160px;margin:0 auto;padding:0 64px;}
+.sec-label{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.2em;color:var(--accent);text-transform:uppercase;display:flex;align-items:center;gap:12px;margin-bottom:56px;}
+.sec-label::before{content:attr(data-num);font-size:9px;color:var(--faint);}
+
+#services{padding:140px 0;}
+.services-header{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:end;margin-bottom:80px;}
+.services-title{font-family:'Syne',sans-serif;font-size:clamp(36px,3.5vw,52px);font-weight:800;color:var(--white);letter-spacing:-.02em;line-height:1.1;}
+.services-intro{font-size:16px;line-height:1.8;color:var(--muted);padding-top:12px;}
+.services-list{border-top:1px solid var(--border);}
+.service-row{display:grid;grid-template-columns:56px 1fr auto;gap:40px;align-items:center;padding:36px 0;border-bottom:1px solid var(--border);cursor:none;transition:padding-left .3s;position:relative;overflow:hidden;}
+.service-row::before{content:'';position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--accent);transform:scaleY(0);transition:transform .3s;transform-origin:top;}
+.service-row:hover{padding-left:16px;}
+.service-row:hover::before{transform:scaleY(1);}
+.svc-num{font-family:'DM Mono',monospace;font-size:11px;color:var(--faint);letter-spacing:.1em;}
+.svc-info h3{font-family:'Syne',sans-serif;font-size:20px;font-weight:700;color:var(--white);margin-bottom:6px;transition:color .25s;}
+.service-row:hover .svc-info h3{color:var(--accent);}
+.svc-info p{font-size:14px;color:var(--muted);line-height:1.6;}
+.svc-tags{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;}
+.svc-tag{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.08em;padding:5px 12px;border:1px solid var(--border);color:var(--faint);}
+
+#work{padding:140px 0;background:var(--surface);}
+.work-header{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:64px;}
+.work-title{font-family:'Syne',sans-serif;font-size:clamp(36px,3.5vw,52px);font-weight:800;color:var(--white);letter-spacing:-.02em;line-height:1.1;}
+.work-grid{display:grid;grid-template-columns:repeat(12,1fr);grid-auto-rows:260px;gap:1px;background:var(--border);}
+.work-card{background:var(--bg);position:relative;overflow:hidden;cursor:none;grid-column:span 4;}
+.work-card.large{grid-column:span 8;}
+.work-card-inner{position:absolute;inset:0;padding:36px;display:flex;flex-direction:column;justify-content:flex-end;}
+.work-card-bg{position:absolute;inset:0;background:var(--surface);transition:transform .6s cubic-bezier(.16,1,.3,1);}
+.work-card:hover .work-card-bg{transform:scale(1.04);}
+.work-card-pattern{position:absolute;inset:0;opacity:.04;background-image:repeating-linear-gradient(45deg,var(--accent) 0,var(--accent) 1px,transparent 0,transparent 50%);background-size:14px 14px;transition:opacity .4s;}
+.work-card:hover .work-card-pattern{opacity:.09;}
+.work-card-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(8,12,16,.85) 0%,transparent 60%);}
+.work-tag{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.15em;color:var(--accent);text-transform:uppercase;margin-bottom:10px;position:relative;z-index:2;}
+.work-name{font-family:'Syne',sans-serif;font-size:20px;font-weight:700;color:var(--white);position:relative;z-index:2;margin-bottom:6px;}
+.work-meta{font-size:13px;color:var(--muted);position:relative;z-index:2;transform:translateY(8px);opacity:0;transition:opacity .3s,transform .3s;}
+.work-card:hover .work-meta{opacity:1;transform:translateY(0);}
+.work-index{position:absolute;top:24px;right:24px;font-family:'DM Mono',monospace;font-size:10px;color:var(--faint);z-index:2;letter-spacing:.1em;}
+
+#process{padding:140px 0;}
+.process-inner{display:grid;grid-template-columns:1fr 2fr;gap:80px;}
+.process-sticky{position:sticky;top:140px;align-self:start;}
+.process-sticky h2{font-family:'Syne',sans-serif;font-size:40px;font-weight:800;color:var(--white);letter-spacing:-.02em;line-height:1.1;margin-bottom:20px;}
+.process-sticky p{font-size:15px;line-height:1.8;color:var(--muted);}
+.process-steps{display:flex;flex-direction:column;gap:0;}
+.process-step{display:grid;grid-template-columns:56px 1fr;gap:32px;padding:40px 0;border-bottom:1px solid var(--border);}
+.step-n{font-family:'DM Mono',monospace;font-size:11px;color:var(--faint);padding-top:4px;letter-spacing:.1em;}
+.step-body h3{font-family:'Syne',sans-serif;font-size:20px;font-weight:700;color:var(--white);margin-bottom:12px;}
+.step-body p{font-size:15px;line-height:1.75;color:var(--muted);}
+
+#about{padding:140px 0;background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border);}
+.about-inner{display:grid;grid-template-columns:1fr 1fr;gap:100px;align-items:center;}
+.about-graphic{position:relative;height:480px;display:flex;align-items:center;justify-content:center;}
+.about-graphic canvas{position:absolute;inset:0;width:100%;height:100%;}
+.about-text .sec-label{margin-bottom:32px;}
+.about-text h2{font-family:'Syne',sans-serif;font-size:clamp(32px,3vw,44px);font-weight:800;color:var(--white);letter-spacing:-.02em;line-height:1.15;margin-bottom:28px;}
+.about-text p{font-size:16px;line-height:1.8;color:var(--muted);margin-bottom:16px;}
+.about-list{margin-top:32px;list-style:none;border-top:1px solid var(--border);}
+.about-list li{padding:14px 0;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:16px;font-family:'DM Mono',monospace;font-size:12px;letter-spacing:.06em;color:var(--muted);}
+.about-list li::before{content:'';width:4px;height:4px;border-radius:50%;background:var(--accent);flex-shrink:0;}
+
+#testimonials{padding:140px 0;}
+.testi-header{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:64px;}
+.testi-title{font-family:'Syne',sans-serif;font-size:clamp(36px,3.5vw,52px);font-weight:800;color:var(--white);letter-spacing:-.02em;line-height:1.1;}
+.testi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);}
+.testi-card{background:var(--bg);padding:48px 40px;transition:background .3s;}
+.testi-card:hover{background:var(--surface);}
+.testi-text{font-size:16px;line-height:1.8;color:rgba(232,237,242,.65);margin-bottom:36px;font-style:italic;}
+.testi-divider{width:24px;height:1px;background:var(--accent);margin-bottom:24px;}
+.testi-name{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:var(--white);margin-bottom:4px;}
+.testi-role{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.1em;color:var(--faint);text-transform:uppercase;}
+
+#cta{padding:160px 0;border-top:1px solid var(--border);}
+.cta-inner{display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center;}
+.cta-text h2{font-family:'Syne',sans-serif;font-size:clamp(40px,4vw,64px);font-weight:800;color:var(--white);letter-spacing:-.02em;line-height:1.05;margin-bottom:24px;}
+.cta-text h2 em{font-style:normal;color:var(--accent);}
+.cta-text p{font-size:16px;line-height:1.8;color:var(--muted);margin-bottom:40px;}
+.cta-right{display:flex;flex-direction:column;gap:16px;}
+.cta-contact-item{padding:28px 32px;border:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;cursor:none;transition:border-color .25s;text-decoration:none;}
+.cta-contact-item:hover{border-color:var(--border-strong);}
+.cci-label{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.15em;color:var(--faint);text-transform:uppercase;margin-bottom:6px;}
+.cci-val{font-family:'Syne',sans-serif;font-size:16px;font-weight:600;color:var(--white);}
+.cci-arrow{color:var(--accent);font-size:18px;}
+
+footer{border-top:1px solid var(--border);padding:40px 64px;display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;}
+.footer-logo{font-family:'Syne',sans-serif;font-size:13px;font-weight:800;letter-spacing:.15em;color:var(--white);}
+.footer-logo span{color:var(--accent);}
+.footer-copy{font-family:'DM Mono',monospace;font-size:10px;color:var(--faint);letter-spacing:.1em;}
+.footer-links{display:flex;gap:32px;}
+.footer-links a{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.1em;color:var(--faint);text-decoration:none;transition:color .2s;}
+.footer-links a:hover{color:var(--text);}
+
+@keyframes up{from{opacity:0;transform:translateY(24px);}to{opacity:1;transform:translateY(0);}}
+@keyframes fade{from{opacity:0;}to{opacity:1;}}
+.reveal{opacity:0;transform:translateY(28px);transition:opacity .75s ease,transform .75s ease;}
+.reveal.in{opacity:1;transform:translateY(0);}
+
+@media(max-width:900px){
+  nav{padding:24px;}
+  .nav-links,.nav-cta{display:none;}
+  #hero{grid-template-columns:1fr;padding:120px 24px 160px;}
+  .hero-right{display:none;}
+  .hero-stats{grid-template-columns:repeat(2,1fr);}
+  .hero-stat{padding:20px 24px;}
+  .container{padding:0 24px;}
+  .services-header,.work-header,.testi-header{flex-direction:column;gap:20px;}
+  .services-header{grid-template-columns:1fr;}
+  .work-card{grid-column:span 12!important;}
+  .process-inner,.about-inner,.testi-grid{grid-template-columns:1fr;}
+  .cta-inner{grid-template-columns:1fr;}
+  footer{padding:32px 24px;flex-direction:column;text-align:center;}
+}
+</style>
+</head>
+<body>
+<div id="cur"></div>
+<div id="cur-trail"></div>
+
+<nav id="nav">
+  <div class="nav-logo">Maahier Solutions<sup>™</sup></div>
+  <ul class="nav-links">
+    <li><a href="#services">Services</a></li>
+    <li><a href="#work">Work</a></li>
+    <li><a href="#process">Process</a></li>
+    <li><a href="#about">About</a></li>
+  </ul>
+  <a href="#cta" class="nav-cta">Get in Touch</a>
+</nav>
+
+<section id="hero">
+  <div class="hero-left">
+    <div class="hero-eyebrow">Digital Marketing Agency</div>
+    <h1 class="hero-title">We build<br>brands that<br><em>scale.</em></h1>
+    <p class="hero-body">Performance marketing, brand strategy, and digital growth for businesses that demand more than average results.</p>
+    <div class="hero-actions">
+      <a href="#work" class="btn btn-fill">View Our Work &nbsp;→</a>
+      <a href="#services" class="btn btn-ghost">Our Services</a>
+    </div>
+  </div>
+  <div class="hero-right">
+    <div class="geo-wrap">
+      <svg viewBox="0 0 420 420" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="g1" x1="0" y1="0" x2="420" y2="420" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#4af4c8" stop-opacity="0.6"/>
+            <stop offset="100%" stop-color="#a0b4ff" stop-opacity="0.3"/>
+          </linearGradient>
+          <linearGradient id="g2" x1="420" y1="0" x2="0" y2="420" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#a0b4ff" stop-opacity="0.12"/>
+            <stop offset="100%" stop-color="#4af4c8" stop-opacity="0.06"/>
+          </linearGradient>
+        </defs>
+        <circle cx="210" cy="210" r="190" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+        <circle cx="210" cy="210" r="150" stroke="rgba(74,244,200,0.1)" stroke-width="1"/>
+        <circle cx="210" cy="210" r="100" stroke="rgba(74,244,200,0.16)" stroke-width="1"/>
+        <line x1="210" y1="20" x2="210" y2="400" stroke="rgba(74,244,200,0.05)" stroke-width="1"/>
+        <line x1="20" y1="210" x2="400" y2="210" stroke="rgba(74,244,200,0.05)" stroke-width="1"/>
+        <line x1="60" y1="60" x2="360" y2="360" stroke="rgba(74,244,200,0.03)" stroke-width="1"/>
+        <line x1="360" y1="60" x2="60" y2="360" stroke="rgba(74,244,200,0.03)" stroke-width="1"/>
+        <circle cx="210" cy="210" r="60" fill="url(#g2)" stroke="url(#g1)" stroke-width="1"/>
+        <circle cx="210" cy="210" r="8" fill="url(#g1)"/>
+        <g stroke="rgba(74,244,200,0.3)" stroke-width="1">
+          <line x1="210" y1="60" x2="210" y2="72"/>
+          <line x1="210" y1="348" x2="210" y2="360"/>
+          <line x1="60" y1="210" x2="72" y2="210"/>
+          <line x1="348" y1="210" x2="360" y2="210"/>
+        </g>
+        <path d="M 80 210 A 130 130 0 0 1 210 80" stroke="url(#g1)" stroke-width="1.5" fill="none" stroke-dasharray="4 6"/>
+        <circle cx="340" cy="130" r="3" fill="rgba(160,180,255,0.5)"/>
+        <circle cx="80" cy="290" r="3" fill="rgba(74,244,200,0.5)"/>
+        <circle cx="300" cy="340" r="2" fill="rgba(74,244,200,0.3)"/>
+        <line x1="210" y1="210" x2="340" y2="130" stroke="rgba(160,180,255,0.08)" stroke-width="1"/>
+        <line x1="210" y1="210" x2="80" y2="290" stroke="rgba(74,244,200,0.08)" stroke-width="1"/>
+      </svg>
+    </div>
+  </div>
+  <div class="hero-stats">
+    <div class="hero-stat">
+      <div class="stat-val"><span id="c1">0</span>+</div>
+      <div class="stat-lbl">Clients Served</div>
+    </div>
+    <div class="hero-stat">
+      <div class="stat-val"><span id="c2">0</span>%</div>
+      <div class="stat-lbl">Avg. ROI Increase</div>
+    </div>
+    <div class="hero-stat">
+      <div class="stat-val"><span id="c3">0</span>+</div>
+      <div class="stat-lbl">Campaigns Delivered</div>
+    </div>
+    <div class="hero-stat">
+      <div class="stat-val"><span id="c4">0</span>%</div>
+      <div class="stat-lbl">Client Retention</div>
+    </div>
+  </div>
+</section>
+
+<section id="services">
+  <div class="container">
+    <div class="sec-label reveal" data-num="01">Services</div>
+    <div class="services-header reveal">
+      <h2 class="services-title">What we<br>do well.</h2>
+      <p class="services-intro">End-to-end digital marketing built around one goal — measurable, compounding growth for your business.</p>
+    </div>
+    <div class="services-list">
+      <div class="service-row reveal">
+        <div class="svc-num">01</div>
+        <div class="svc-info">
+          <h3>Performance Advertising</h3>
+          <p>Paid campaigns across Meta, Google, and TikTok engineered for conversion — not vanity metrics.</p>
+        </div>
+        <div class="svc-tags"><span class="svc-tag">Meta Ads</span><span class="svc-tag">Google Ads</span><span class="svc-tag">TikTok</span></div>
+      </div>
+      <div class="service-row reveal">
+        <div class="svc-num">02</div>
+        <div class="svc-info">
+          <h3>SEO & Content Strategy</h3>
+          <p>Technical SEO, authority building, and content that compounds in value over time.</p>
+        </div>
+        <div class="svc-tags"><span class="svc-tag">Technical SEO</span><span class="svc-tag">Content</span><span class="svc-tag">Link Building</span></div>
+      </div>
+      <div class="service-row reveal">
+        <div class="svc-num">03</div>
+        <div class="svc-info">
+          <h3>Social Media Management</h3>
+          <p>Consistent, on-brand presence that builds community and drives meaningful engagement.</p>
+        </div>
+        <div class="svc-tags"><span class="svc-tag">Instagram</span><span class="svc-tag">LinkedIn</span><span class="svc-tag">Facebook</span></div>
+      </div>
+      <div class="service-row reveal">
+        <div class="svc-num">04</div>
+        <div class="svc-info">
+          <h3>Brand Identity & Strategy</h3>
+          <p>Positioning, visual identity, and messaging systems that make you genuinely distinct.</p>
+        </div>
+        <div class="svc-tags"><span class="svc-tag">Positioning</span><span class="svc-tag">Visual Identity</span><span class="svc-tag">Messaging</span></div>
+      </div>
+      <div class="service-row reveal">
+        <div class="svc-num">05</div>
+        <div class="svc-info">
+          <h3>Email Marketing & Automation</h3>
+          <p>Lifecycle sequences and automated flows that turn your list into your highest-margin channel.</p>
+        </div>
+        <div class="svc-tags"><span class="svc-tag">Klaviyo</span><span class="svc-tag">Automation</span><span class="svc-tag">Copywriting</span></div>
+      </div>
+      <div class="service-row reveal">
+        <div class="svc-num">06</div>
+        <div class="svc-info">
+          <h3>Analytics & Conversion Optimization</h3>
+          <p>Deep funnel analysis and systematic testing to extract more revenue from existing traffic.</p>
+        </div>
+        <div class="svc-tags"><span class="svc-tag">GA4</span><span class="svc-tag">Hotjar</span><span class="svc-tag">A/B Testing</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="work">
+  <div class="container">
+    <div class="work-header reveal">
+      <div>
+        <div class="sec-label" data-num="02" style="margin-bottom:16px">Selected Work</div>
+        <h2 class="work-title">Recent<br>Projects.</h2>
+      </div>
+    </div>
+    <div class="work-grid reveal">
+      <div class="work-card large">
+        <div class="work-card-bg"></div>
+        <div class="work-card-pattern"></div>
+        <div class="work-card-overlay"></div>
+        <div class="work-card-inner">
+          <div class="work-index">01 / 06</div>
+          <div class="work-tag">Performance · Brand</div>
+          <div class="work-name">NexaTech — Full Launch</div>
+          <div class="work-meta">0 to 50K social followers in 90 days. 4.2× ROAS on paid channels.</div>
+        </div>
+      </div>
+      <div class="work-card">
+        <div class="work-card-bg" style="background:linear-gradient(135deg,#0d1a14,#0d1219)"></div>
+        <div class="work-card-pattern"></div>
+        <div class="work-card-overlay"></div>
+        <div class="work-card-inner">
+          <div class="work-index">02 / 06</div>
+          <div class="work-tag">SEO · Content</div>
+          <div class="work-name">Verdant Organics</div>
+          <div class="work-meta">310% organic traffic growth in 8 months.</div>
+        </div>
+      </div>
+      <div class="work-card">
+        <div class="work-card-bg" style="background:linear-gradient(135deg,#0d101a,#0d1219)"></div>
+        <div class="work-card-pattern" style="background-image:repeating-linear-gradient(45deg,#a0b4ff 0,#a0b4ff 1px,transparent 0,transparent 50%);background-size:14px 14px;"></div>
+        <div class="work-card-overlay"></div>
+        <div class="work-card-inner">
+          <div class="work-index">03 / 06</div>
+          <div class="work-tag">Social · Lead Gen</div>
+          <div class="work-name">Luxe Interiors</div>
+          <div class="work-meta">Instagram 2K → 85K. Leads up 240%.</div>
+        </div>
+      </div>
+      <div class="work-card">
+        <div class="work-card-bg"></div>
+        <div class="work-card-pattern"></div>
+        <div class="work-card-overlay"></div>
+        <div class="work-card-inner">
+          <div class="work-index">04 / 06</div>
+          <div class="work-tag">Email · Automation</div>
+          <div class="work-name">Volt Fitness</div>
+          <div class="work-meta">$180K in 60 days from a dormant list.</div>
+        </div>
+      </div>
+      <div class="work-card large">
+        <div class="work-card-bg" style="background:linear-gradient(135deg,#100d1a,#0d1219)"></div>
+        <div class="work-card-pattern" style="background-image:repeating-linear-gradient(45deg,#a0b4ff 0,#a0b4ff 1px,transparent 0,transparent 50%);background-size:14px 14px;"></div>
+        <div class="work-card-overlay"></div>
+        <div class="work-card-inner">
+          <div class="work-index">05 / 06</div>
+          <div class="work-tag">Paid Ads · CRO</div>
+          <div class="work-name">BuildRight Co. — Cost Per Lead</div>
+          <div class="work-meta">Google Ads + CRO — 60% reduction in cost per lead over 4 months.</div>
+        </div>
+      </div>
+      <div class="work-card">
+        <div class="work-card-bg"></div>
+        <div class="work-card-pattern"></div>
+        <div class="work-card-overlay"></div>
+        <div class="work-card-inner">
+          <div class="work-index">06 / 06</div>
+          <div class="work-tag">TikTok · Brand</div>
+          <div class="work-name">PixelWave Games</div>
+          <div class="work-meta">12M impressions. 8.1% CTR.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="process">
+  <div class="container">
+    <div class="sec-label reveal" data-num="03">How We Work</div>
+    <div class="process-inner">
+      <div class="process-sticky reveal">
+        <h2>A system,<br>not guesswork.</h2>
+        <p>Every engagement follows the same rigorous process — because consistency is what produces reliable results.</p>
+      </div>
+      <div class="process-steps">
+        <div class="process-step reveal">
+          <div class="step-n">01</div>
+          <div class="step-body">
+            <h3>Discovery & Audit</h3>
+            <p>We begin by understanding your business deeply — your market, competitors, current performance data, and where the real opportunities lie.</p>
+          </div>
+        </div>
+        <div class="process-step reveal">
+          <div class="step-n">02</div>
+          <div class="step-body">
+            <h3>Strategy</h3>
+            <p>A tailored growth plan built on data, not templates. We map channels, budgets, timelines, and KPIs before anything launches.</p>
+          </div>
+        </div>
+        <div class="process-step reveal">
+          <div class="step-n">03</div>
+          <div class="step-body">
+            <h3>Execution</h3>
+            <p>Rapid, coordinated deployment across all channels. We move fast, but nothing goes live without meeting our internal quality bar.</p>
+          </div>
+        </div>
+        <div class="process-step reveal">
+          <div class="step-n">04</div>
+          <div class="step-body">
+            <h3>Optimization</h3>
+            <p>Weekly analysis of performance data. We cut what underperforms and double down on what works — continuously, not quarterly.</p>
+          </div>
+        </div>
+        <div class="process-step reveal">
+          <div class="step-n">05</div>
+          <div class="step-body">
+            <h3>Scale</h3>
+            <p>Once the system is proven, we scale it methodically. Every growth lever is tracked, documented, and compounded over time.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="about">
+  <div class="container">
+    <div class="about-inner">
+      <div class="about-graphic reveal">
+        <canvas id="about-canvas"></canvas>
+      </div>
+      <div class="about-text reveal">
+        <div class="sec-label" data-num="04">About Us</div>
+        <h2>Performance-obsessed.<br>Results-accountable.</h2>
+        <p>Maahier Solutions is a digital marketing agency built for businesses that are serious about growth. We combine rigorous data analysis with creative strategy to deliver outcomes that compound over time.</p>
+        <p>Over 150 brands have trusted us to grow their digital presence — from early-stage startups to established enterprises expanding into new markets.</p>
+        <ul class="about-list">
+          <li>Data-driven decision making across every channel</li>
+          <li>Dedicated account manager on every engagement</li>
+          <li>Real-time reporting dashboards — no surprises</li>
+          <li>Month-to-month engagements — we earn retention</li>
+          <li>US market focus with global execution capability</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="testimonials">
+  <div class="container">
+    <div class="testi-header reveal">
+      <div>
+        <div class="sec-label" data-num="05" style="margin-bottom:16px">Client Feedback</div>
+        <h2 class="testi-title">What clients say.</h2>
+      </div>
+    </div>
+    <div class="testi-grid reveal">
+      <div class="testi-card">
+        <p class="testi-text">"Our ad spend went from burning cash to generating it. ROAS moved from 1.2× to 6.8× in three months. Methodical, transparent, and genuinely accountable."</p>
+        <div class="testi-divider"></div>
+        <div class="testi-name">James Reuters</div>
+        <div class="testi-role">CEO, NexaTech</div>
+      </div>
+      <div class="testi-card">
+        <p class="testi-text">"We went from invisible to dominating our niche on Google in six months. Their SEO approach was structured, measurable, and it actually delivered."</p>
+        <div class="testi-divider"></div>
+        <div class="testi-name">Sara Malik</div>
+        <div class="testi-role">Founder, Verdant Organics</div>
+      </div>
+      <div class="testi-card">
+        <p class="testi-text">"Instagram became our number one lead source within a year. They understood our brand from day one and built something that genuinely reflects who we are."</p>
+        <div class="testi-divider"></div>
+        <div class="testi-name">Derek Kim</div>
+        <div class="testi-role">CMO, Luxe Interiors</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="cta">
+  <div class="container">
+    <div class="cta-inner reveal">
+      <div class="cta-text">
+        <div class="sec-label" data-num="06" style="margin-bottom:24px">Contact</div>
+        <h2>Ready to grow<br>with <em>intention</em>?</h2>
+        <p>Tell us about your business and what you're trying to achieve. We'll respond with a clear plan — no obligation.</p>
+        <a href="mailto:hello@maahiersolutions.com" class="btn btn-fill">Start a Conversation &nbsp;→</a>
+      </div>
+      <div class="cta-right">
+        <a href="mailto:hello@maahiersolutions.com" class="cta-contact-item">
+          <div>
+            <div class="cci-label">Email</div>
+            <div class="cci-val">hello@maahiersolutions.com</div>
+          </div>
+          <div class="cci-arrow">↗</div>
+        </a>
+        <a href="#" class="cta-contact-item">
+          <div>
+            <div class="cci-label">LinkedIn</div>
+            <div class="cci-val">Maahier Solutions</div>
+          </div>
+          <div class="cci-arrow">↗</div>
+        </a>
+        <a href="#" class="cta-contact-item">
+          <div>
+            <div class="cci-label">Location</div>
+            <div class="cci-val">Available Worldwide</div>
+          </div>
+          <div class="cci-arrow">↗</div>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-logo">Maahier <span>Solutions</span></div>
+  <div class="footer-links">
+    <a href="#">LinkedIn</a>
+    <a href="#">Twitter</a>
+    <a href="#">Instagram</a>
+  </div>
+  <div class="footer-copy">© 2024 Maahier Solutions. All rights reserved.</div>
+</footer>
+
+<script>
+const cur=document.getElementById('cur'),curT=document.getElementById('cur-trail');
+let mx=0,my=0,tx=0,ty=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;});
+(function loop(){cur.style.left=mx+'px';cur.style.top=my+'px';tx+=(mx-tx)*.1;ty+=(my-ty)*.1;curT.style.left=tx+'px';curT.style.top=ty+'px';requestAnimationFrame(loop);})();
+document.querySelectorAll('a,button,.service-row,.work-card,.testi-card').forEach(el=>{
+  el.addEventListener('mouseenter',()=>document.body.classList.add('expand'));
+  el.addEventListener('mouseleave',()=>document.body.classList.remove('expand'));
+});
+
+window.addEventListener('scroll',()=>document.getElementById('nav').classList.toggle('scrolled',scrollY>60));
+
+function count(id,target){
+  const el=document.getElementById(id);let v=0,step=target/70;
+  const t=setInterval(()=>{v=Math.min(v+step,target);el.textContent=Math.round(v);if(v>=target)clearInterval(t);},20);
+}
+setTimeout(()=>{count('c1',150);count('c2',340);count('c3',300);count('c4',94);},800);
+
+const obs=new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('in');}),{threshold:.08});
+document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+
+// ABOUT canvas
+const canvas=document.getElementById('about-canvas');
+const ctx=canvas.getContext('2d');
+function resizeCanvas(){const r=canvas.parentElement.getBoundingClientRect();canvas.width=r.width;canvas.height=480;}
+resizeCanvas();window.addEventListener('resize',resizeCanvas);
+const nodes=Array.from({length:20},()=>({x:Math.random()*canvas.width,y:Math.random()*canvas.height,vx:(Math.random()-.5)*.35,vy:(Math.random()-.5)*.35,r:Math.random()*1.5+1}));
+(function draw(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  nodes.forEach((a,i)=>{
+    nodes.slice(i+1).forEach(b=>{
+      const d=Math.hypot(a.x-b.x,a.y-b.y);
+      if(d<140){ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.strokeStyle=`rgba(74,244,200,${(1-d/140)*0.1})`;ctx.lineWidth=1;ctx.stroke();}
+    });
+    ctx.beginPath();ctx.arc(a.x,a.y,a.r,0,Math.PI*2);ctx.fillStyle='rgba(74,244,200,0.3)';ctx.fill();
+    a.x+=a.vx;a.y+=a.vy;
+    if(a.x<0||a.x>canvas.width)a.vx*=-1;
+    if(a.y<0||a.y>canvas.height)a.vy*=-1;
+  });
+  requestAnimationFrame(draw);
+})();
+</script>
+</body>
+</html>
